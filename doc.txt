@@ -1,0 +1,77 @@
+# Django API Project Documentation
+
+## Overview
+This project is a Django-based API inspired by IMDb, designed to manage movies and user interactions. It includes two main apps: `movies` for handling movie data and `users` for managing user accounts, authentication, and preferences. The API supports listing movies, connecting them to genres and actors, user registration with OTP verification, JWT-based authentication, and user-specific features like favorite and watched movie lists. Swagger integration (via `drf-yasg`) provides interactive API documentation for exploring and testing endpoints.
+
+## Project Setup
+The project uses Django and Django REST Framework (DRF) with dependencies: Django, DRF, `django-rest-framework-simplejwt`, Pillow (for images), and `drf-yasg` (for Swagger). It has two apps: `movies` and `users`. Media files (movie images) are stored in `media/` and served at `/media/`. The configuration in `movie_api/settings.py` registers both apps, sets up JWT authentication, and includes Swagger settings for API documentation. Project URLs (`movie_api/urls.py`) route requests to `/api/movies/` for movie endpoints, `/api/users/` for user endpoints, and `/swagger/` or `/redoc/` for API documentation.
+
+## Movies App
+The `movies` app manages movie-related data and functionality.
+
+- **Data Models**:
+  - `Genre`: Stores genre names (e.g., Action, Drama) with a descriptive name field.
+  - `Actor`: Stores actor names.
+  - `Movie`: Stores movie details like title, plot summary, image, rating (0-5), genres, actors, and creation timestamp. Genres and actors are linked via many-to-many relationships. Models include docstrings and `help_text` for clear Swagger documentation.
+
+- **API Endpoints**:
+  - List/create movies: `/api/movies/`
+  - View/update/delete a movie: `/api/movies/<id>/`
+  - List genres: `/api/movies/genres/`
+  - List actors: `/api/movies/actors/`
+
+- **Functionality**:
+  - Public users can view movies, genres, and actors.
+  - Authenticated users (via JWT) can create, update, or delete movies.
+  - Responses include nested genre and actor data.
+
+## Users App
+The `users` app handles user registration, authentication, OTP verification, and profile management.
+
+- **Data Models**:
+  - `UserProfile`: Linked to Django’s `User` model, stores phone number and lists of favorite/watched movies (linked to `Movie` model). Includes docstrings and `help_text`.
+  - `OtpCode`: Stores OTP codes with phone numbers and timestamps for user verification.
+
+- **API Endpoints**:
+  - Register: `/api/users/register/` (creates inactive user with username, email, password, phone number).
+  - Login: `/api/users/login/` (returns JWT tokens with user data: ID, username, email).
+  - Refresh token: `/api/users/token/refresh/` (refreshes JWT access token).
+  - Verify OTP: `/api/users/otp/verify/` (activates user if OTP matches).
+  - Profile: `/api/users/profile/` (view or manage favorite/watched movies).
+
+- **Authentication Flow**:
+  1. Register with username, email, password, and phone number; user is inactive until verified.
+  2. Generate and store OTP in `OtpCode` (requires external SMS service like Twilio; not implemented).
+  3. Verify OTP via `/api/users/otp/verify/` to activate the user.
+  4. Log in to get JWT tokens with user data.
+  5. Use profile endpoint to manage favorite/watched movie lists.
+
+## Swagger Integration
+Swagger is integrated using `drf-yasg` to provide interactive API documentation.
+- **Setup**: Added `drf-yasg` to `INSTALLED_APPS` and configured `SWAGGER_SETTINGS` for JWT authentication (`Bearer` token in header).
+- **Endpoints**: Access Swagger UI at `/swagger/` and ReDoc at `/redoc/`. Both display all API endpoints with descriptions from model/view docstrings.
+- **Features**: Allows testing endpoints (e.g., POST to `/api/users/login/`), viewing schemas, and entering JWT tokens for authenticated requests.
+- **Configuration**: Added to `movie_api/urls.py` with metadata (title: "Movie API", version: v1, description, etc.). Models and views include docstrings and `help_text` for detailed documentation.
+
+## Example Workflow
+1. **Register**: Send username, email, password, phone number to `/api/users/register/`. User is inactive.
+2. **Verify OTP**: Send phone number and OTP to `/api/users/otp/verify/` to activate the user.
+3. **Login**: Send username and password to `/api/users/login/` to get JWT tokens and user data.
+4. **Manage Profile**: Use `/api/users/profile/` with JWT to view or update favorite/watched movies.
+5. **Access Movies**: Use `/api/movies/` to view or manage movies (write actions require JWT).
+6. **Explore API**: Visit `/swagger/` to test endpoints and view documentation.
+
+## Key Notes
+- **OTP Generation**: Requires an SMS service (e.g., Twilio) to generate and send OTPs, not yet implemented.
+- **Image Handling**: Movie images are stored in `media/movies/` using Pillow.
+- **Permissions**: Movie endpoints allow public read access but restrict writes to authenticated users. Profile endpoints require authentication.
+- **Swagger**: Enhances developer experience by providing an interactive UI to explore and test APIs.
+- **Extensibility**: Add search/filter endpoints or password reset functionality as needed.
+- **Deployment**: Use PostgreSQL and a media storage solution (e.g., AWS S3) for production.
+- **Testing**: Test endpoints with Postman or Swagger UI. Consider DRF’s `APITestCase` for unit tests.
+
+## Next Steps
+- Implement OTP generation/sending with an SMS service (e.g., Twilio).
+- Add search/filter endpoints for movies (e.g., by genre or title).
+- Write unit tests for all endpoints.
+- Configure production settings for database and media storage.

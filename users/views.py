@@ -13,9 +13,11 @@ from .serializers import (
 from django.contrib.auth.models import User
 
 class TokenObtainPairView(BaseTokenObtainPairView):
+    """Obtain JWT access and refresh tokens with user data."""
     serializer_class = TokenObtainPairSerializer
 
 class OTPVerificationViewSet(CreateModelMixin, GenericViewSet):
+    """Verify OTP code to activate user account."""
     queryset = OtpCode.objects.all()
     serializer_class = OTPVerificationSerializer
 
@@ -47,9 +49,11 @@ class OTPVerificationViewSet(CreateModelMixin, GenericViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RegisterView(generics.CreateAPIView):
+    """Register a new user with username, email, password, and phone number."""
     serializer_class = RegisterSerializer
 
 class UserProfileView(APIView):
+    """View and manage user's favorite and watched movies."""
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
