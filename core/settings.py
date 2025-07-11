@@ -37,12 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+    # third-party packages
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_yasg',
+    'graphene_django',
+    # installed apps
     'movies',
     "users",
-    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -146,4 +148,11 @@ SWAGGER_SETTINGS = {
         }
     },
     'USE_SESSION_AUTH': False,  # Disable session auth since we use JWT
+}
+
+GRAPHENE = {
+    'SCHEMA': 'movie_api.schema.schema',  # Point to the schema (defined later)
+    'MIDDLEWARE': [
+        'graphene_django.debug.DjangoDebugMiddleware',  # Optional: for debugging
+    ],
 }
