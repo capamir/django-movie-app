@@ -1,21 +1,22 @@
-from rest_framework import generics, permissions
+from rest_framework import viewsets
 from .models import Movie, Genre, Actor
 from .serializers import MovieSerializer, GenreSerializer, ActorSerializer
+from .permissions import IsAdminOrReadOnly
 
-class MovieListCreateView(generics.ListCreateAPIView):
+class MovieViewSet(viewsets.ModelViewSet):
+    """Manage movies: list, create, retrieve, update, delete."""
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
-class MovieDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Movie.objects.all()
-    serializer_class = MovieSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-class GenreListView(generics.ListAPIView):
+class GenreViewSet(viewsets.ModelViewSet):
+    """Manage genres: list, create, retrieve, update, delete."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
-class ActorListView(generics.ListAPIView):
+class ActorViewSet(viewsets.ModelViewSet):
+    """Manage actors: list, create, retrieve, update, delete."""
     queryset = Actor.objects.all()
     serializer_class = ActorSerializer
+    permission_classes = [IsAdminOrReadOnly]
