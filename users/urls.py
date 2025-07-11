@@ -1,11 +1,15 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
-from . import views
+from .views import RegisterViewSet, UserProfileViewSet, TokenObtainPairView, OTPVerificationViewSet
+
+router = DefaultRouter()
+router.register(r'register', RegisterViewSet, basename='register')
+router.register(r'profiles', UserProfileViewSet, basename='profile')
 
 urlpatterns = [
-    path('register/', views.RegisterView.as_view(), name='register'),
-    path('profile/', views.UserProfileView.as_view(), name='user-profile'),
-    path('login/', views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('', include(router.urls)),
+    path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('otp/verify/', views.OTPVerificationViewSet.as_view({'post': 'create'}), name='otp_verify'),
+    path('otp/verify/', OTPVerificationViewSet.as_view({'post': 'create'}), name='otp_verify'),
 ]

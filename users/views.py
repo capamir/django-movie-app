@@ -1,16 +1,17 @@
-from rest_framework import generics, permissions
+from rest_framework import viewsets, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView as BaseTokenObtainPairView
 from rest_framework import status
+from django.contrib.auth.models import User
 from .models import UserProfile, OtpCode
 from .serializers import (
     UserProfileSerializer, RegisterSerializer,
     TokenObtainPairSerializer, OTPVerificationSerializer
 )
-from django.contrib.auth.models import User
+from movies.permissions import IsAdminOrReadOnly
 
 class TokenObtainPairView(BaseTokenObtainPairView):
     """Obtain JWT access and refresh tokens with user data."""
@@ -20,6 +21,7 @@ class OTPVerificationViewSet(CreateModelMixin, GenericViewSet):
     """Verify OTP code to activate user account."""
     queryset = OtpCode.objects.all()
     serializer_class = OTPVerificationSerializer
+    permission_classes = [permissions.AllowAny]  # Public access for OTP verification
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -48,32 +50,37 @@ class OTPVerificationViewSet(CreateModelMixin, GenericViewSet):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class RegisterView(generics.CreateAPIView):
+class RegisterViewSet(viewsets.ModelViewSet):
     """Register a new user with username, email, password, and phone number."""
+    queryset = User.objects.all()
     serializer_class = RegisterSerializer
+    permission_classes = [permissions.AllowAny]  # Allow public registration
+    http_method_names = ['post']  # Only allow POST for registration
 
-class UserProfileView(APIView):
-    """View and manage user's favorite and watched movies."""
-    permission_classes = [permissions.IsAuthenticated]
+class UserProfileViewSet(viewsets.ModelViewSet):
+    """Manage user profiles: view or update favorite/watched movies."""
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
-    def get(self, request):
-        profile = UserProfile.objects.get(user=request.user)
-        serializer = UserProfileSerializer(profile)
-        return Response(serializer.data)
+    def get_queryset(self):
+        """Restrict to the current user's profile unless admin."""
+        if self.request.user.is_staff:
+            return UserProfile.objects.all()
+        return UserProfile.objects.filter(user=self.request.user)
 
-    def post(self, request):
-        profile = UserProfile.objects.get(user=request.user)
-        action = request.data.get('action')
-        movie_id = request.data.get('movie_id')
+    def perform_update(self, serializer):
+        """Handle custom actions for adding/removing favorite/watched movies."""
+        instance = serializer.instance
+        action = self.request.data.get('action')
+        movie_id = self.request.data.get('movie_id')
 
         if action == 'add_favorite':
-            profile.favorite_movies.add(movie_id)
+            instance.favorite_movies.add(movie_id)
         elif action == 'remove_favorite':
-            profile.favorite_movies.remove(movie_id)
+            instance.favorite_movies.remove(movie_id)
         elif action == 'add_watched':
-            profile.watched_movies.add(movie_id)
+            instance.watched_movies.add(movie_id)
         elif action == 'remove_watched':
-            profile.watched_movies.remove(movie_id)
-
-        serializer = UserProfileSerializer(profile)
-        return Response(serializer.data)
+            instance.watched_movies.remove(movie_id)
+        serializer.save()

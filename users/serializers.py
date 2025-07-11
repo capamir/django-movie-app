@@ -24,12 +24,20 @@ class OTPVerificationSerializer(serializers.Serializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     user = UserSerializerWithToken(read_only=True)
-    favorite_movies = MovieSerializer(many=True)
-    watched_movies = MovieSerializer(many=True)
+    favorite_movies = serializers.PrimaryKeyRelatedField(queryset=Movie.objects.all(), many=True, required=False)
+    watched_movies = serializers.PrimaryKeyRelatedField(queryset=Movie.objects.all(), many=True, required=False)
 
     class Meta:
         model = UserProfile
         fields = ['id', 'user', 'phone_number', 'favorite_movies', 'watched_movies']
+        read_only_fields = ['user']
+
+    def to_representation(self, instance):
+        """Use nested serializers for read operations."""
+        representation = super().to_representation(instance)
+        representation['favorite_movies'] = MovieSerializer(instance.favorite_movies.all(), many=True).data
+        representation['watched_movies'] = MovieSerializer(instance.watched_movies.all(), many=True).data
+        return representation
 
 class RegisterSerializer(serializers.ModelSerializer):
     phone_number = serializers.CharField(max_length=11, write_only=True)
@@ -49,6 +57,4 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.is_active = False  # Deactivate until OTP verification
         user.save()
         UserProfile.objects.create(user=user, phone_number=phone_number)
-        # TODO: Generate and send OTP code here (e.g., via SMS or email)
-        # For now, assume OTP is manually created in OtpCode model
         return user
