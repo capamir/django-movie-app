@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import MovieViewSet, GenreViewSet, ActorViewSet
 
 router = DefaultRouter()
-router.register(r'movies', MovieViewSet, basename='movie')
+router.register(r'', MovieViewSet, basename='movie') 
 router.register(r'genres', GenreViewSet, basename='genre')
 router.register(r'actors', ActorViewSet, basename='actor')
 
