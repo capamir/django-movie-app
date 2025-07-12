@@ -1,7 +1,6 @@
 from rest_framework import permissions
 
 class IsAdminOrReadOnly(permissions.BasePermission):
-    """Allow GET for all users, other methods for admin users only."""
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:  # GET, HEAD, OPTIONS
             return True

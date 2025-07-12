@@ -12,9 +12,20 @@ class ActorSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class MovieSerializer(serializers.ModelSerializer):
-    genres = GenreSerializer(many=True)
-    actors = ActorSerializer(many=True)
+    genres = GenreSerializer(many=True, read_only=True)
+    actors = ActorSerializer(many=True, read_only=True)
+    genre_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Genre.objects.all(), many=True, write_only=True, source='genres'
+    )
+    actor_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Actor.objects.all(), many=True, write_only=True, source='actors'
+    )
+    image = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Movie
-        fields = ['id', 'title', 'plot_summary', 'image', 'rating', 'genres', 'actors', 'created_at']
+        fields = [
+            'id', 'title', 'plot_summary', 'image', 'rating',
+            'genres', 'actors', 'genre_ids', 'actor_ids', 'created_at'
+        ]
+        read_only_fields = ['created_at']

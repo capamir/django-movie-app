@@ -25,20 +25,11 @@ class MovieAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
     list_per_page = 20
 
-    def genre_list(self, obj):
-        """Display comma-separated list of genres."""
-        return ", ".join(genre.name for genre in obj.genres.all())
-    genre_list.short_description = "Genres"
-
-    def actor_list(self, obj):
-        """Display comma-separated list of actors."""
-        return ", ".join(actor.name for actor in obj.actors.all())
-    actor_list.short_description = "Actors"
 
 @admin.register(Genre)
 class GenreAdmin(admin.ModelAdmin):
     """Admin interface for Genre model."""
-    list_display = ('name',)
+    list_display = ('id', 'name',)
     search_fields = ('name',)
     list_per_page = 20
 
