@@ -42,12 +42,14 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'drf_yasg',
     'graphene_django',
+    'corsheaders',
     # installed apps
     'movies',
     "users",
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -159,3 +161,5 @@ GRAPHENE = {
         'graphene_django.debug.DjangoDebugMiddleware',  # Optional: for debugging
     ],
 }
+
+CORS_ALLOW_ALL_ORIGINS = True
